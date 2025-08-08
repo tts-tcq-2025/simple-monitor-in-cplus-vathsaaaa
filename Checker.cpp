@@ -2,24 +2,18 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-// Individual checks
-bool isTemperatureOk(float temperature) {
-    if (temperature < 0 || temperature > 45) {
-        printf("Temperature out of range!\n");
+// Generic range checker for temperature and SOC
+bool isInRange(float value, float min, float max, const char* parameterName) {
+    if (value < min || value > max) {
+        printf("%s out of range!\n", parameterName);
         return false;
     }
     return true;
 }
 
-bool isSocOk(float soc) {
-    if (soc < 20 || soc > 80) {
-        printf("State of Charge out of range!\n");
-        return false;
-    }
-    return true;
-}
-
+// Specialized check for chargeRate
 bool isChargeRateOk(float chargeRate) {
+    // Only upper limit check, no assumption on minimum
     if (chargeRate > 0.8) {
         printf("Charge Rate out of range!\n");
         return false;
@@ -27,17 +21,16 @@ bool isChargeRateOk(float chargeRate) {
     return true;
 }
 
-// Composed check
 bool batteryIsOk(float temperature, float soc, float chargeRate) {
-    bool tempOk = isTemperatureOk(temperature);
-    bool socOk = isSocOk(soc);
+    bool tempOk = isInRange(temperature, 0.0, 45.0, "Temperature");
+    bool socOk = isInRange(soc, 20.0, 80.0, "State of Charge");
     bool chargeRateOk = isChargeRateOk(chargeRate);
 
     return tempOk && socOk && chargeRateOk;
 }
 
 int main() {
-    assert(batteryIsOk(25, 70, 0.7) == true);
-    assert(batteryIsOk(50, 85, 0) == false);
+    assert(batteryIsOk(25.0, 70.0, 0.7) == true);
+    assert(batteryIsOk(50.0, 85.0, 0.0) == false); // allowed if no minimum set for chargeRate
     return 0;
 }
