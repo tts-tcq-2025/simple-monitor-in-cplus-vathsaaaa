@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <assert.h>
 
 // Enum to represent status of each check
 typedef enum {
