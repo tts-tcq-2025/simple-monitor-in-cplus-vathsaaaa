@@ -9,15 +9,6 @@ typedef enum {
     STATUS_TOO_HIGH
 } Status;
 
-const char* statusToString(Status status) {
-    switch(status) {
-        case STATUS_OK: return "OK";
-        case STATUS_TOO_LOW: return "too low";
-        case STATUS_TOO_HIGH: return "too high";
-        default: return "unknown status";
-    }
-}
-
 typedef struct {
     const char* parameterName;
     Status status;
@@ -28,9 +19,6 @@ ParameterStatus checkInRange(float value, float min, float max, const char* para
     result.status = (value < min) ? STATUS_TOO_LOW :
                     (value > max) ? STATUS_TOO_HIGH :
                     STATUS_OK;
-    if (result.status != STATUS_OK) {
-        printf("%s %s!\n", parameterName, statusToString(result.status));
-    }
     return result;
 }
 
