@@ -62,20 +62,69 @@ bool batteryIsOk(BatteryCheckResult result) {
            (result.chargeRateStatus.status == STATUS_OK);
 }
 
-int main() {
+void runTests() {
     BatteryCheckResult result;
 
+    // Test 1: All OK
     result = checkBattery(25.0, 70.0, 0.7);
-    printf("Battery OK? %s\n", batteryIsOk(result) ? "Yes" : "No");
+    assert(result.temperatureStatus.status == STATUS_OK);
+    assert(result.socStatus.status == STATUS_OK);
+    assert(result.chargeRateStatus.status == STATUS_OK);
+    assert(batteryIsOk(result) == true);
 
-    result = checkBattery(-5.0, 70.0, 0.7);
-    printf("Battery OK? %s\n", batteryIsOk(result) ? "Yes" : "No");
+    // Test 2: Temperature too low
+    result = checkBattery(-0.1, 50.0, 0.7);
+    assert(result.temperatureStatus.status == STATUS_TOO_LOW);
+    assert(result.socStatus.status == STATUS_OK);
+    assert(result.chargeRateStatus.status == STATUS_OK);
+    assert(batteryIsOk(result) == false);
 
-    result = checkBattery(25.0, 85.0, 0.7);
-    printf("Battery OK? %s\n", batteryIsOk(result) ? "Yes" : "No");
+    // Test 3: Temperature too high
+    result = checkBattery(46.0, 50.0, 0.7);
+    assert(result.temperatureStatus.status == STATUS_TOO_HIGH);
+    assert(result.socStatus.status == STATUS_OK);
+    assert(result.chargeRateStatus.status == STATUS_OK);
+    assert(batteryIsOk(result) == false);
 
-    result = checkBattery(25.0, 70.0, 0.9);
-    printf("Battery OK? %s\n", batteryIsOk(result) ? "Yes" : "No");
+    // Test 4: SoC too low
+    result = checkBattery(25.0, 19.9, 0.7);
+    assert(result.temperatureStatus.status == STATUS_OK);
+    assert(result.socStatus.status == STATUS_TOO_LOW);
+    assert(result.chargeRateStatus.status == STATUS_OK);
+    assert(batteryIsOk(result) == false);
 
+    // Test 5: SoC too high
+    result = checkBattery(25.0, 80.1, 0.7);
+    assert(result.temperatureStatus.status == STATUS_OK);
+    assert(result.socStatus.status == STATUS_TOO_HIGH);
+    assert(result.chargeRateStatus.status == STATUS_OK);
+    assert(batteryIsOk(result) == false);
+
+    // Test 6: Charge rate too high
+    result = checkBattery(25.0, 50.0, 0.81);
+    assert(result.temperatureStatus.status == STATUS_OK);
+    assert(result.socStatus.status == STATUS_OK);
+    assert(result.chargeRateStatus.status == STATUS_TOO_HIGH);
+    assert(batteryIsOk(result) == false);
+
+    // Test 7: Charge rate negative (allowed)
+    result = checkBattery(25.0, 50.0, -0.5);
+    assert(result.temperatureStatus.status == STATUS_OK);
+    assert(result.socStatus.status == STATUS_OK);
+    assert(result.chargeRateStatus.status == STATUS_OK);
+    assert(batteryIsOk(result) == true);
+
+    // Test 8: Multiple failures
+    result = checkBattery(-10.0, 10.0, 1.0);
+    assert(result.temperatureStatus.status == STATUS_TOO_LOW);
+    assert(result.socStatus.status == STATUS_TOO_LOW);
+    assert(result.chargeRateStatus.status == STATUS_TOO_HIGH);
+    assert(batteryIsOk(result) == false);
+
+    printf("All tests passed!\n");
+}
+
+int main() {
+    runTests();
     return 0;
 }
